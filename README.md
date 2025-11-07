@@ -98,7 +98,7 @@ Settings → Secrets and variables → Actions → New repository secret
 | Secret Name | 说明 | 示例 |
 |-------------|------|------|
 | `CHECKIN_TOKEN` | 星城 API 的 Token | `123456...` |
-| `APP_ID` | 星城应用的 App ID | `wx1234567890abcdef` |
+| `APP_ID` | 星城应用的 App ID | `123456*******` |
 
 ---
 
