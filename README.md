@@ -8,7 +8,7 @@
 
 **Actions 的自动签到**
 
-支持平台：龙空 | 星城
+支持平台：龙空 | 星城 | 雨晨iOS
 
 [快速开始](#-快速开始) · [常见问题](#-常见问题)
 
@@ -32,8 +32,9 @@
 
 | 平台 | 状态 | 说明 |
 |------|------|------|
-| 🐉 龙空 | ✅ 支持 | 基于 Cookie 认证 |
-| 🌟 星城 | ✅ 支持 | 基于 Token 认证 |
+| 龙空 | ✅ 支持 | 基于 Cookie 认证 |
+| 星城 | ✅ 支持 | 基于 Token 认证 |
+| 雨晨iOS | ✅ 支持 | 基于 账号密码 认证 |
 
 ---
 
@@ -63,42 +64,27 @@ Settings → Secrets and variables → Actions → New repository secret
 
 ## ⚙️ 配置说明
 
-### 🐉 龙空签到配置
-
-#### 获取 Cookie
-
-1. 使用浏览器登录 [龙空](https://www.lkong.com/)
-2. 按 `F12` 打开开发者工具
-3. 切换到 **Network（网络）** 标签
-4. 刷新页面，点击任意请求
-5. 在 **Headers（请求头）** 中找到 `Cookie` 字段
-6. 复制完整的 Cookie 值
 
 #### 添加到 Secrets
 
 | Secret Name | 说明 | 示例 |
 |-------------|------|------|
 | `LKONG_COOKIE` | 龙空网站的 Cookie | `123456` |
+| `CHECKIN_TOKEN` | 星城 API 的 Token | `123456...` |
+| `APP_ID` | 星城应用的 App ID | `123456*******` |
+| `YUNCHEN_USENAME` | 雨晨账号 | `123456...` |
+| `YUNCHEN_PASSWORD` | 雨晨密码 | `123456*******` |
 
 ---
 
-### 🌟 星城签到配置
+#### 获取星城 Token 和 App ID
 
-#### 获取 Token 和 App ID
-
-1. 打开微信小程序：`#小程序://星城/rD4FdKj2vw6Fo0o`
-2. 使用抓包工具（如 Charles、Fiddler）或小程序调试工具
-3. 查找请求 URL：`https://api.lzstack.com/mall/v2/api/checkin/handler`
-4. 在 **请求标头（Request Headers）** 中找到以下字段：
+1. 抓包微信小程序
+2. 查找请求 URL：`https://api.lzstack.com/mall/v2/api/checkin/handler`
+3. 在 **请求标头（Request Headers）** 中找到以下字段：
    - `token` - 用户认证令牌
    - `app-id` - 应用标识符
 
-#### 添加到 Secrets
-
-| Secret Name | 说明 | 示例 |
-|-------------|------|------|
-| `CHECKIN_TOKEN` | 星城 API 的 Token | `123456...` |
-| `APP_ID` | 星城应用的 App ID | `123456*******` |
 
 ---
 
