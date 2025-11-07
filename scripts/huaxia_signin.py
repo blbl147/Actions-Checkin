@@ -19,17 +19,18 @@ class Config:
     # 读取信息
     USERNAME = os.getenv('HXSY_USERNAME')
     PASSWORD = os.getenv('HXSY_PASSWORD')
-    
+
     LOGIN_URL = 'https://www.huaxiashuyu.com/wp-admin/admin-ajax.php'
     USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
     CONNECT_TIMEOUT = 10
     READ_TIMEOUT = 30
     MAX_RETRIES = 3
     PROXY = os.getenv('HTTP_PROXY')
-    
+
     # GitHub Actions 环境下关闭详细调试
     DEBUG = os.getenv('DEBUG', 'false').lower() == 'true'
     IS_GITHUB_ACTIONS = os.getenv('GITHUB_ACTIONS') == 'true'
+    STATUS_FILE = "status/status_huaxia.json"
 
 # ========== 创建会话 ==========
 def create_session():
@@ -59,7 +60,7 @@ def notify(title: str, content: str):
     print('\n' + '=' * 50)
     print(message)
     print('=' * 50 + '\n')
-    
+
     # GitHub Actions 支持
     if Config.IS_GITHUB_ACTIONS:
         summary_file = os.getenv('GITHUB_STEP_SUMMARY')
@@ -74,7 +75,7 @@ def validate_config():
     if not Config.USERNAME or not Config.PASSWORD:
         notify('❌ 配置错误', '未设置账号或密码！请检查 GitHub Secrets 配置')
         sys.exit(1)
-    
+
     # 脱敏显示用户名
     masked_username = Config.USERNAME[:3] + '***' + Config.USERNAME[-3:] if len(Config.USERNAME) > 6 else '***'
     print(f"📧 使用账号: {masked_username}")

@@ -27,24 +27,24 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 # ==================== 状态管理 ====================
-STATUS_FILE = "status.json"
+STATUS_FILE = "status/status_yuchen.json"
 
 def load_today_status() -> bool:
     """加载今日签到状态"""
     if not os.path.exists(STATUS_FILE):
         return False
-    
+
     try:
         with open(STATUS_FILE, 'r', encoding='utf-8') as f:
             data = json.load(f)
             today = datetime.now().strftime('%Y-%m-%d')
-            
+
             if data.get('date') == today and data.get('success'):
                 log.info(f"✅ 今日({today})已成功签到，跳过本次运行")
                 return True
     except Exception as e:
         log.warning(f"读取状态文件失败: {e}")
-    
+
     return False
 
 def save_today_status(success: bool, message: str = "", accounts_detail: List[Dict] = None) -> None:
@@ -57,7 +57,7 @@ def save_today_status(success: bool, message: str = "", accounts_detail: List[Di
         'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         'accounts_detail': accounts_detail or []
     }
-    
+
     try:
         with open(STATUS_FILE, 'w', encoding='utf-8') as f:
             json.dump(status, f, ensure_ascii=False, indent=2)
@@ -265,7 +265,7 @@ class YuChen:
 
             message = LoginResultHandler(result)
             self.signin_message = message.msg
-            
+
             # 判断签到是否成功
             if message.success != "error":
                 self.signin_success = True
@@ -323,7 +323,7 @@ class YuChen:
             self.yu_chen_check()
             sleep_random(1, 3)
             self.yu_chen_info()
-            
+
             result['success'] = self.signin_success
             result['message'] = self.signin_message
             result['credit_info'] = self.credit_info
@@ -368,9 +368,9 @@ def main():
         try:
             yuchen = YuChen(**account_config)
             result = yuchen.run()
-            
+
             accounts_detail.append(result)
-            
+
             if result['success']:
                 success_count += 1
                 log.info(f"✅ 账号 {i} ({result['username']}) 签到成功")

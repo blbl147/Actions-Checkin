@@ -1,0 +1,77 @@
+name: 🏙️ 星城小程序自动签到
+
+on:
+  schedule:
+    - cron: '10 17 * * *'  # 北京时间 01:10 (UTC 17:10)
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: '手动触发原因'
+        required: false
+        default: '测试运行'
+
+permissions:
+  contents: write
+
+jobs:
+  checkin:
+    name: 星城小程序签到
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
+
+      - name: 🐍 设置Python环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 📦 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: ⏰ 显示运行时间
+        run: |
+          echo "UTC时间: $(date -u '+%Y-%m-%d %H:%M:%S')"
+          echo "北京时间: $(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')"
+
+      - name: 🚀 执行签到任务
+        env:
+          CHECKIN_TOKEN: ${{ secrets.CHECKIN_TOKEN }}
+          APP_ID: ${{ secrets.APP_ID }}
+          SCKEY: ${{ secrets.SCKEY }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          TZ: Asia/Shanghai
+        run: python scripts/xingcheng_checkin.py
+
+      - name: 💾 提交签到状态
+        if: always()
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: '📝 星城小程序签到记录 [#${{ github.run_number }}]'
+          commit_user_name: 'XingCheng Bot'
+          commit_user_email: 'bot@xingcheng.auto'
+          file_pattern: 'status/*.json *.log'
+        continue-on-error: true
+
+      - name: 📋 上传执行日志
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xingcheng-log-${{ github.run_number }}
+          path: '*.log'
+          retention-days: 7
+
+      - name: 📊 显示执行结果
+        if: always()
+        run: |
+          echo "=========================================="
+          echo "✅ 工作流执行完成"
+          echo "=========================================="

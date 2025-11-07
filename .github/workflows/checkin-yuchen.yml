@@ -1,47 +1,44 @@
-name: 雨晨iOS资源自动签到
+name: 🌧️ 雨晨iOS资源自动签到
 
 on:
-  # 定时触发（UTC时间）
   schedule:
-    # 北京时间 03:00 = UTC 19:00 (前一天)
-    - cron: '0 19 * * *'
-    # 北京时间 13:00 = UTC 05:00 (当天)
-    - cron: '0 5 * * *'
-  
-  # 手动触发
+    - cron: '0 19 * * *'  # 北京时间 03:00 (UTC 19:00)
+    - cron: '0 5 * * *'   # 北京时间 13:00 (UTC 05:00) - 重试
   workflow_dispatch:
+    inputs:
+      reason:
+        description: '手动触发原因'
+        required: false
+        default: '测试运行'
 
-# 设置权限
 permissions:
   contents: write
 
 jobs:
   checkin:
+    name: 雨晨iOS资源签到
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 10
+
     steps:
-      # 1. 检出代码
       - name: 📥 检出代码
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: true
           fetch-depth: 0
-      
-      # 2. 设置Python环境
-      - name: 🐍 设置Python 3.11
+
+      - name: 🐍 设置Python环境
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-      
-      # 3. 安装依赖
+
       - name: 📦 安装依赖
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      
-      # 4. 显示当前时间
+
       - name: ⏰ 显示运行时间
         run: |
           echo "UTC时间: $(date -u '+%Y-%m-%d %H:%M:%S')"
@@ -52,43 +49,33 @@ jobs:
           elif [ "$HOUR" -eq 13 ]; then
             echo "📅 这是重试签到（13:00）"
           fi
-      
-      # 5. 执行签到
-      - name: 🚀 执行自动签到
+
+      - name: 🚀 执行签到任务
         env:
           YUCHEN_USERNAME: ${{ secrets.YUCHEN_USERNAME }}
           YUCHEN_PASSWORD: ${{ secrets.YUCHEN_PASSWORD }}
           YUCHEN_ACCOUNTS: ${{ secrets.YUCHEN_ACCOUNTS }}
           USER_AGENT: ${{ secrets.USER_AGENT }}
           TZ: Asia/Shanghai
-        run: |
-          python yuchen_checkin.py
-      
-      # 6. 提交状态文件
+        run: python scripts/yuchen_checkin.py
+
       - name: 💾 提交签到状态
         if: always()
-        run: |
-          git config --local user.email "bot@yuchen.auto"
-          git config --local user.name "YuChen Bot"
-          git add -A
-          
-          if git diff --staged --quiet; then
-            echo "📭 没有文件变更"
-          else
-            git commit -m "📝 签到记录 [$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')]"
-            git push
-            echo "✅ 状态文件已推送"
-          fi
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: '📝 雨晨iOS签到记录 [#${{ github.run_number }}]'
+          commit_user_name: 'YuChen Bot'
+          commit_user_email: 'bot@yuchen.auto'
+          file_pattern: 'status/*.json *.log'
         continue-on-error: true
-      
-      # 7. 显示执行结果
-      - name: 📊 显示签到结果
+
+      - name: 📊 显示执行结果
         if: always()
         run: |
           echo "=========================================="
-          if [ -f status.json ]; then
+          if [ -f status/status_yuchen.json ]; then
             echo "📄 签到状态:"
-            cat status.json
+            cat status/status_yuchen.json
           else
             echo "⚠️ 未找到状态文件"
           fi
@@ -98,14 +85,13 @@ jobs:
             echo "📋 最近10行日志:"
             tail -n 10 yuchen.log
           fi
-      
-      # 8. 上传日志文件（可选）
-      - name: 📤 上传日志
+
+      - name: 📤 上传日志文件
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: logs-${{ github.run_number }}
+          name: yuchen-logs-${{ github.run_number }}
           path: |
             yuchen.log
-            status.json
+            status/status_yuchen.json
           retention-days: 7
