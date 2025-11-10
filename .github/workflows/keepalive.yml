@@ -1,0 +1,33 @@
+name: Keepalive Workflow
+
+on:
+  schedule:
+    - cron: '0 0 */50 * *'
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # 给予写入权限
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Keepalive Workflow
+        uses: gautamkrishnar/keepalive-workflow@v1
+        with:
+          # GitHub Token（必需）
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
+          
+          # 自动提交的消息（可选）
+          commit_message: "chore: 自动保活提交"
+          
+          # 提交者名称（可选）
+          committer_username: "keepalive-bot"
+          committer_email: "keepalive-bot@example.com"
+          
+          # 要修改的文件（可选，默认是 README.md）
+          auto_update_file: "README.md"
+          
+          # 是否使用时间戳（可选，默认 true）
+          time_elapsed: "true"
