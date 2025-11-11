@@ -5,7 +5,7 @@
 [![GitHub Actions](https://img.shields.io/badge/GitHub-Actions-2088FF?style=flat-square&logo=github-actions&logoColor=white)](https://github.com/features/actions)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
-**基于 GitHub Actions 的多平台自动签到工具**
+**签到jb**
 
 支持平台：花夏数娱 | 龙空论坛 | 星城小程序 | 看雪论坛 | 雨晨iOS资源
 
@@ -89,3 +89,11 @@
     "password": "password2"
   }
 ]
+```
+## ⚠️ 免责声明
+
+本项目仅供学习交流使用，请勿用于商业用途
+使用本项目所产生的一切后果由使用者自行承担
+请遵守相关网站的服务条款和使用规则
+频繁请求可能导致账号被封禁，请合理设置签到频率
+开发者不对账号安全负责，请妥善保管账号信息
