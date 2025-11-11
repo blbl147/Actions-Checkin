@@ -1,0 +1,35 @@
+name: ❄️ 看雪论坛自动签到
+on:
+    workflow_dispatch:
+    push:
+        branches: [main]
+        paths-ignore:
+            - 'README.md'
+            - 'imgs/**'
+    schedule:
+        - cron: 30 1 * * *
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '16.x'
+            - name: install dependency(dependencies)
+              run: npm install
+            - name: CheckIn
+              run: node scripts/kanxue_checkin.js
+              env:
+                  PUSHPLUS: ${{ secrets.PUSHPLUS }}
+                  KANXUE_COOKIE: ${{ secrets.KANXUE_COOKIE }}
+            # - name: keep alive
+            #   uses: gautamkrishnar/keepalive-workflow@master # this repository has been disabled
+            - name: Delete workflow runs
+              uses: Mattraks/delete-workflow-runs@v2 # delete some workflows
+              with:
+                  token: ${{ github.token }}
+                  repository: ${{ github.repository }}
+                  retain_days: 0
+                  keep_minimum_runs: 9
