@@ -1,35 +1,76 @@
-name: ❄️ 看雪论坛自动签到
+name: 🏔️ 看雪论坛自动签到
+
 on:
-    workflow_dispatch:
-    push:
-        branches: [main]
-        paths-ignore:
-            - 'README.md'
-            - 'imgs/**'
-    schedule:
-        - cron: 30 1 * * *
+  schedule:
+    - cron: '30 22 * * *'  # 北京时间 06:30 (UTC 22:30)
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: '手动触发原因'
+        required: false
+        默认: '测试运行'
+
+permissions:
+  contents: write
+
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-            - name: setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: '16.x'
-            - name: install dependency(dependencies)
-              run: npm install
-            - name: CheckIn
-              run: node scripts/kanxue_checkin.js
-              env:
-                  PUSHPLUS: ${{ secrets.PUSHPLUS }}
-                  KANXUE_COOKIE: ${{ secrets.KANXUE_COOKIE }}
-            # - name: keep alive
-            #   uses: gautamkrishnar/keepalive-workflow@master # this repository has been disabled
-            - name: Delete workflow runs
-              uses: Mattraks/delete-workflow-runs@v2 # delete some workflows
-              with:
-                  token: ${{ github.token }}
-                  repository: ${{ github.repository }}
-                  retain_days: 0
-                  keep_minimum_runs: 9
+  checkin:
+    name: 看雪论坛签到
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: 🐍 设置Python环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 📦 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: ⏰ 显示运行时间
+        run: |
+          echo "UTC时间: $(date -u '+%Y-%m-%d %H:%M:%S')"
+          echo "北京时间: $(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')"
+
+      - name: 🚀 执行签到任务
+        env:
+          KANXUE_COOKIE: ${{ secrets.KANXUE_COOKIE }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          TZ: Asia/Shanghai
+        run: python scripts/kanxue_checkin.py
+
+      - name: 💾 提交签到状态
+        if: always()
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: '📝 看雪论坛签到记录 [#${{ github.run_number }}]'
+          commit_user_name: 'Kanxue Bot'
+          commit_user_email: 'bot@kanxue.auto'
+          file_pattern: 'status/*.json status/*.txt'
+        continue-on-error: true
+
+      - name: 📊 显示执行结果
+        if: always()
+        run: |
+          echo "=========================================="
+          if [ -f status/status_kanxue.json ]; then
+            echo "📄 签到状态:"
+            cat status/status_kanxue.json
+          elif [ -f status/status_kanxue.txt ]; then
+            echo "📄 签到状态:"
+            cat status/status_kanxue.txt
+          else
+            echo "⚠️ 未找到状态文件"
+          fi
+          echo "=========================================="
