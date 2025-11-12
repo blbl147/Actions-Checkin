@@ -50,7 +50,7 @@ def save_today_status(success, message=""):
 
     # 确保status目录存在
     os.makedirs(os.path.dirname(STATUS_FILE), exist_ok=True)
-    
+
     try:
         with open(STATUS_FILE, 'w', encoding='utf-8') as f:
             f.write(json.dumps(status, ensure_ascii=False, indent=2))
@@ -78,7 +78,7 @@ def check_cookie(cookie):
 
 def kanxue_checkin():
     """看雪论坛签到主函数"""
-    
+
     # 从环境变量读取配置
     cookie = os.environ.get('KANXUE_COOKIE')
     pushplus_token = os.environ.get('PUSHPLUS_TOKEN')
@@ -96,7 +96,7 @@ def kanxue_checkin():
         return False
 
     url = "https://bbs.kanxue.com/user-signin.htm"
-    
+
     headers = {
         'User-Agent': 'HD1910(Android/7.1.2) (pediy.UNICFBC0DD/1.0.5) Weex/0.26.0 720x1280',
         'Cookie': cookie,
@@ -191,8 +191,8 @@ def send_pushplus(token, msg, code):
         content = '📢您已签到，无需重复签到'
 
     data = {
-        "token": token，
-        "title": title，
+        "token": token,
+        "title": title,
         "content": content,
         "template": "json"
     }
@@ -207,17 +207,17 @@ def send_pushplus(token, msg, code):
 
     try:
         response = requests.post(
-            'http://www.pushplus.plus/send'，
+            'http://www.pushplus.plus/send',
             json=data,
             timeout=10
         )
-        
-        if response。status_code == 200:
+
+        if response.status_code == 200:
             result = response.json()
             print(f'✅ PushPlus推送成功: {result.get("msg", "未知")}')
         else:
             print(f'⚠️ PushPlus推送失败，状态码: {response.status_code}')
-    except requests。exceptions。RequestException as e:
+    except requests.exceptions.RequestException as e:
         print(f'⚠️ PushPlus推送异常: {str(e)}')
     except Exception as e:
         print(f'⚠️ PushPlus推送未知错误: {str(e)}')
