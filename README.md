@@ -5,7 +5,7 @@
 [![GitHub Actions](https://img.shields.io/badge/GitHub-Actions-2088FF?style=flat-square&logo=github-actions&logoColor=white)](https://github.com/features/actions)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
-**签到jb**
+**自动签到**
 
 支持平台：花夏数娱 | 龙空论坛 | 星城小程序 | 看雪论坛 | 雨晨iOS资源
 
@@ -59,7 +59,7 @@
 
 | Secret名称 | 说明 | 获取方法 |
 |-----------|------|---------|
-| `KANXUE_COOKIE` | 网站Cookie | F12 → Network → Cookie字段 |
+| `KANXUE_COOKIE` | 网站Cookie | 抓签到user-signin.htm或者signin |
 
 
 
