@@ -3,6 +3,7 @@ name: 🏔️ 看雪论坛自动签到
 on:
   schedule:
     - cron: '30 22 * * *'  # 北京时间 06:30 (UTC 22:30)
+    - cron: '0 6 * * *'   # 北京时间 14:00 (UTC 06:00) - 重试
   workflow_dispatch:
     inputs:
       reason:
