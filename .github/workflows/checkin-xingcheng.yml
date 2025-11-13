@@ -58,7 +58,8 @@ jobs:
           commit_message: '📝 星城小程序签到记录 [#${{ github.run_number }}]'
           commit_user_name: 'XingCheng Bot'
           commit_user_email: 'bot@xingcheng.auto'
-          file_pattern: 'status/*.json *.log'
+          file_pattern: 'status/*.json status/*.txt'
+          add_options: '--ignore-errors'
         continue-on-error: true
 
       - name: 📋 上传执行日志
