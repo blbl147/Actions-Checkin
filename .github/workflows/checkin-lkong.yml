@@ -49,15 +49,3 @@ jobs:
           LKONG_REQUEST_BODY: ${{ secrets.LKONG_REQUEST_BODY }}
           TZ: Asia/Shanghai
         run: python scripts/lkong_punch.py
-
-      - name: 💾 提交签到状态
-        if: always()
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: '📝 龙空论坛签到记录 [#${{ github.run_number }}]'
-          commit_user_name: 'Lkong Bot'
-          commit_user_email: 'bot@lkong.auto'
-          file_pattern: 'status/*.json'
-          skip_dirty_check: true
-        continue-on-error: true
-
