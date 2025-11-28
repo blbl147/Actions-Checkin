@@ -1,0 +1,63 @@
+name: 🐉 龙空论坛自动签到
+
+on:
+  schedule:
+    - cron: '0 20 * * *'  # 北京时间 04:00 (UTC 20:00)
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: '手动触发原因'
+        required: false
+        default: '测试运行'
+
+permissions:
+  contents: write
+
+jobs:
+  checkin:
+    name: 龙空论坛签到
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: 🐍 设置Python环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 📦 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: ⏰ 显示运行时间
+        run: |
+          echo "UTC时间: $(date -u '+%Y-%m-%d %H:%M:%S')"
+          echo "北京时间: $(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')"
+
+      - name: 🚀 执行签到任务
+        env:
+          LKONG_COOKIE: ${{ secrets.LKONG_COOKIE }}
+          LKONG_REQUEST_BODY: ${{ secrets.LKONG_REQUEST_BODY }}
+          TZ: Asia/Shanghai
+        run: python scripts/lkong_punch.py
+
+      - name: 💾 提交签到状态
+        if: always()
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: '📝 龙空论坛签到记录 [#${{ github.run_number }}]'
+          commit_user_name: 'Lkong Bot'
+          commit_user_email: 'bot@lkong.auto'
+          file_pattern: 'status/*.json'
+          skip_dirty_check: true
+        continue-on-error: true
+

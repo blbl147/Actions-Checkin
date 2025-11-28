@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 虚拟环境
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 日志文件
+*.log
+
+# 临时文件
+*.tmp
+*.bak
+*.cache
+
+# 测试文件
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 本地配置（不上传敏感信息）
+config.local.yaml
+*.local.*
+
+# 注意：status/ 目录下的文件需要提交，所以不忽略
+# 如果不想提交状态文件，取消下面的注释
+# status/*.json
+# status/*.txt
