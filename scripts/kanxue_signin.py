@@ -167,7 +167,7 @@ def main():
         cookie = 'bendi'
 
     # 清理 Cookie 字符串
-    cookie = ' '。join(cookie.split())
+    cookie = ' '.join(cookie.split())
 
     if not cookie or '你的完整Cookie' in cookie:
         print("❌ 错误: 请配置 KANXUE_COOKIE 环境变量或在脚本中填入 Cookie\n")
