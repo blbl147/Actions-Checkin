@@ -107,7 +107,7 @@ class KanxueSignIn:
                     if code == '0':
                         # 签到成功
                         if str(message).isdigit():
-                            return True, f"签到成功！连续签到 {message} 天"
+                            return True, f"签到成功！获得 {message} 雪币"
                         else:
                             return True, f"签到成功！{message}"
                     else:
