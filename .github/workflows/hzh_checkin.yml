@@ -1,0 +1,41 @@
+name: 华住会签到
+
+on:
+  workflow_dispatch: # 允许手动触发
+  schedule:
+    # 每天北京时间早上 5:00 运行 (对应 UTC 时间为前一天的 21:00)
+    - cron: '0 21 * * *'
+
+jobs:
+  checkin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v3
+
+      - name: 设置 Node.js 环境
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # 使用 Node.js 18
+
+      - name' 安装脚本依赖
+        run: |
+          npm install axios axios-cookiejar-support tough-cookie form-data sync-request
+
+      - name: 下载通用通知文件
+        # 脚本依赖 sendNotify.js 文件来发送通知，这里从公共仓库下载
+        run: |
+          wget https://raw.githubusercontent.com/ccwav/QLScriptPublic/main/sendNotify.js
+
+      - name: 运行签到脚本
+        env:
+          # --- 必填 Secret ---
+          hzh_url: ${{ secrets.HZH_URL }}
+
+          # --- 通知 Secret (按需填写一个或多个) ---
+          PUSH_PLUS_TOKEN: ${{ secrets.PUSH_PLUS_TOKEN }} # PushPlus
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}      # Telegram Bot Token
+          TG_USER_ID: ${{ secrets.TG_USER_ID }}          # Telegram User ID
+          # ...可以根据 sendNotify.js 支持的服务添加更多, 例如 ServerChan, DingTalk等
+        run: |
+          node scripts/hzh.js
