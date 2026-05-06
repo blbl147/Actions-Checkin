@@ -132,7 +132,7 @@ class YuChen:
     """雨晨iOS资源签到类"""
 
     def __init__(self, **kwargs):
-        self.url: str = "yc.yuchengyouxi.com"
+        self.url: str = "iosyc.com"
         self.username: str = kwargs.get('username', '')
         self.password: str = kwargs.get('password', '')
         self.user_agent: str = kwargs.get('user_agent',
