@@ -33,6 +33,14 @@ except ImportError:
     OCR_AVAILABLE = False
     log_msg = "⚠️ OCR库未安装，将跳过图片识别功能"
 
+# 尝试导入 curl_cffi（可选）：模拟真实浏览器 TLS/HTTP2 指纹，绕过 Cloudflare 指纹质询
+try:
+    from curl_cffi import requests as cffi_requests
+    CURL_CFFI_AVAILABLE = True
+except ImportError:
+    cffi_requests = None
+    CURL_CFFI_AVAILABLE = False
+
 # 禁用SSL警告和XML解析警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
@@ -440,19 +448,22 @@ class SXSYCheckin:
         self.math_verify = ""
         self.domain_changed = False
 
-        # 创建session并配置
-        self.session = requests.session()
-        self.session.verify = False
-
-        # 配置重试策略
-        retry_strategy = Retry(
-            total=3,
-            backoff_factor=1,
-            status_forcelist=[429, 500, 502, 503, 504]
-        )
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-        self.session.mount("https://", adapter)
-        self.session.mount("http://", adapter)
+        # 创建session：优先用 curl_cffi 模拟 Chrome 指纹，绕过 Cloudflare 指纹质询
+        if CURL_CFFI_AVAILABLE:
+            self.session = cffi_requests.Session(impersonate="chrome")
+            log.info("🛡️ 已启用 curl_cffi（模拟 Chrome 指纹）")
+        else:
+            self.session = requests.session()
+            self.session.verify = False
+            retry_strategy = Retry(
+                total=3,
+                backoff_factor=1,
+                status_forcelist=[429, 500, 502, 503, 504]
+            )
+            adapter = HTTPAdapter(max_retries=retry_strategy)
+            self.session.mount("https://", adapter)
+            self.session.mount("http://", adapter)
+            log.info("ℹ️ curl_cffi 未安装，使用标准 requests")
 
         # 设置Cookie
         if self.cookie:

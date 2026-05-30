@@ -6,4 +6,5 @@ urllib3>=2.2.0
 beautifulsoup4>=4.12.0
 lxml>=4.9.0
 pillow>=10.0.0
-pytesseract>=0.3.10
+# 尚香书苑专用 - 绕过 Cloudflare TLS 指纹质询
+curl_cffi>=0.7.0
