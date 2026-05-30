@@ -79,7 +79,7 @@ class MiniProgramCheckin:
             Logger.info("=" * 60)
             Logger.info(f"开始执行签到...")
             Logger.info(f"当前时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-            Logger.info(f"App ID: {self.app_id}")
+            Logger.info("App ID: 已配置")
             Logger.info(f"活动代码: {self.ACTIVITY_CODE}")
             Logger.info(f"店铺代码: {self.SHOP_CODE}")
             Logger.info(f"请求体: {json.dumps(payload, ensure_ascii=False)}")
@@ -94,7 +94,6 @@ class MiniProgramCheckin:
 
             result = response.json()
             Logger.info(f"响应状态码: {response.status_code}")
-            # Logger.info(f"响应内容: {json.dumps(result, ensure_ascii=False, indent=2)}")
 
             code = result.get('code')
             message = result.get('message', '')
@@ -128,12 +127,10 @@ class MiniProgramCheckin:
             return False, f"网络异常: {str(e)}"
         except json.JSONDecodeError as e:
             Logger.error(f"响应解析失败: {str(e)}")
-            Logger.error(f"原始响应: {response.text}")
+            Logger.error(f"原始响应长度: {len(response.text)}")
             return False, f"响应解析失败"
         except Exception as e:
-            Logger.error(f"未知异常: {str(e)}")
-            import traceback
-            Logger.error(traceback.format_exc())
+            Logger.error(f"未知异常: {type(e).__name__}: {str(e)}")
             return False, f"异常: {str(e)}"
         finally:
             Logger.info("=" * 60)
@@ -156,9 +153,9 @@ class Notifier:
             if response.status_code == 200:
                 Logger.success("Server酱通知发送成功")
             else:
-                Logger.warning(f"Server酱通知发送失败: {response.text}")
+                Logger.warning(f"Server酱通知发送失败，HTTP {response.status_code}")
         except Exception as e:
-            Logger.warning(f"Server酱推送失败: {str(e)}")
+            Logger.warning(f"Server酱推送失败: {type(e).__name__}")
 
     @staticmethod
     def send_pushplus(token, title, content):
@@ -179,9 +176,9 @@ class Notifier:
             if response.status_code == 200:
                 Logger.success("PushPlus通知发送成功")
             else:
-                Logger.warning(f"PushPlus通知发送失败: {response.text}")
+                Logger.warning(f"PushPlus通知发送失败，HTTP {response.status_code}")
         except Exception as e:
-            Logger.warning(f"PushPlus推送失败: {str(e)}")
+            Logger.warning(f"PushPlus推送失败: {type(e).__name__}")
 
 
 def main():
@@ -220,8 +217,8 @@ def main():
         Logger.error("=" * 60)
         sys.exit(1)
 
-    Logger.info(f"✅ Token: {TOKEN[:8]}***{TOKEN[-8:]}")
-    Logger.info(f"✅ App ID: {APP_ID}")
+    Logger.info("✅ Token: 已配置")
+    Logger.info("✅ App ID: 已配置")
 
     # ========== 执行签到 ==========
     checkin = MiniProgramCheckin(TOKEN, APP_ID)

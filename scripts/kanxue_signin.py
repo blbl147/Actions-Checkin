@@ -68,7 +68,7 @@ class KanxueSignIn:
                 code = str(result.get('code', ''))
                 message = str(result.get('message', ''))
                 
-                self._log(f"签到状态: {result}")
+                self._log(f"签到状态: code={code}, message={message}")
                 
                 if code == '0' and '已签到' in message:
                     return 'signed'
@@ -102,7 +102,7 @@ class KanxueSignIn:
                     code = str(result.get('code', ''))
                     message = result.get('message', '')
                     
-                    self._log(f"签到响应: {result}")
+                    self._log(f"签到响应: code={code}, message={message}")
                     
                     if code == '0':
                         # 签到成功
@@ -114,11 +114,11 @@ class KanxueSignIn:
                         return False, f"签到失败: {message}"
                         
                 except json.JSONDecodeError:
-                    self._log(f"返回内容: {response.text}", "WARNING")
+                    self._log(f"返回内容解析失败，响应长度: {len(response.text)}", "WARNING")
                     # 如果不是 JSON 但包含成功标识
                     if '成功' in response.text or 'success' in response.text.lower():
                         return True, "签到成功（非标准响应）"
-                    return False, f"返回内容解析失败: {response.text[:100]}"
+                    return False, "返回内容解析失败"
             elif response.status_code == 403:
                 return False, "触发反爬虫限制 (403)，请稍后重试"
             else:
@@ -162,21 +162,17 @@ def main():
     # 优先从环境变量读取 Cookie（用于 GitHub Actions）
     cookie = os.getenv('KANXUE_COOKIE', '')
 
-    # 如果环境变量为空，从这里读取（仅本地测试）
-    if not cookie:
-        cookie = 'bendi'
-
     # 清理 Cookie 字符串
     cookie = ' '.join(cookie.split())
 
-    if not cookie or '你的完整Cookie' in cookie:
+    if not cookie:
         print("❌ 错误: 请配置 KANXUE_COOKIE 环境变量或在脚本中填入 Cookie\n")
         print("获取方法:")
         print("1. 浏览器登录 https://bbs.kanxue.com/")
         print("2. F12 打开开发者工具 → Network")
         print("3. 刷新页面，找到任意请求")
         print("4. 复制 Request Headers 中的 Cookie 值\n")
-        return
+        exit(1)
 
     try:
         signer = KanxueSignIn(cookie)
@@ -197,8 +193,6 @@ def main():
         exit(1)
     except Exception as e:
         print(f"\n❌ 程序异常: {e}\n")
-        import traceback
-        traceback.print_exc()
         exit(1)
 
 

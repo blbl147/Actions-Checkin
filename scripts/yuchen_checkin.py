@@ -20,50 +20,10 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler('yuchen.log', encoding='utf-8')
+        logging.StreamHandler(sys.stdout)
     ]
 )
 log = logging.getLogger(__name__)
-
-# ==================== 状态管理 ====================
-STATUS_FILE = "status/status_yuchen.json"
-
-def load_today_status() -> bool:
-    """加载今日签到状态"""
-    if not os.path.exists(STATUS_FILE):
-        return False
-
-    try:
-        with open(STATUS_FILE, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            today = datetime.now().strftime('%Y-%m-%d')
-
-            if data.get('date') == today and data.get('success'):
-                log.info(f"✅ 今日({today})已成功签到，跳过本次运行")
-                return True
-    except Exception as e:
-        log.warning(f"读取状态文件失败: {e}")
-
-    return False
-
-def save_today_status(success: bool, message: str = "", accounts_detail: List[Dict] = None) -> None:
-    """保存今日签到状态"""
-    today = datetime.now().strftime('%Y-%m-%d')
-    status = {
-        'date': today,
-        'success': success,
-        'message': message,
-        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        'accounts_detail': accounts_detail or []
-    }
-
-    try:
-        with open(STATUS_FILE, 'w', encoding='utf-8') as f:
-            json.dump(status, f, ensure_ascii=False, indent=2)
-        log.info(f"💾 状态已保存: success={success}, message={message}")
-    except Exception as e:
-        log.error(f"保存状态失败: {e}")
 
 # ==================== 工具函数 ====================
 def sleep_random(min_sec: int = 3, max_sec: int = 8) -> None:
@@ -157,11 +117,10 @@ class YuChen:
         self.session.mount("https://", adapter)
         self.session.mount("http://", adapter)
 
-        log.debug(self.__str__())
+        log.debug(f"username={mask_username(self.username)}, password=***")
 
     def __str__(self):
-        masked_pwd = self.password[:2] + '*' * (len(self.password) - 2) if len(self.password) > 2 else '***'
-        return f'username={mask_username(self.username)}, password={masked_pwd}'
+        return f'username={mask_username(self.username)}, password=***'
 
     def headers(self) -> Dict[str, str]:
         """增强请求头，模拟真实浏览器"""
@@ -201,7 +160,7 @@ class YuChen:
 
             if token_input:
                 token = token_input.get('value')
-                log.debug(f"token: {token}")
+                log.debug("token: 已获取")
                 return token
             else:
                 log.error("未找到token输入框")
@@ -347,17 +306,11 @@ def main():
     log.info(f"⏰ 运行时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     log.info("=" * 60)
 
-    # 检查今日是否已成功签到
-    if load_today_status():
-        log.info("✅ 今日已完成签到，程序退出")
-        sys.exit(0)
-
     # 获取账号配置
     accounts = Config.get_accounts()
 
     if not accounts:
         log.error("❌ 未配置任何账号！")
-        save_today_status(False, "未配置账号")
         sys.exit(1)
 
     log.info(f"检测到 {len(accounts)} 个账号\n")
@@ -365,7 +318,6 @@ def main():
     # 执行签到
     success_count = 0
     fail_count = 0
-    accounts_detail = []
 
     for i, account_config in enumerate(accounts, 1):
         log.info(f"\n{'='*60}")
@@ -378,10 +330,6 @@ def main():
 
             # 脱敏处理，避免日志和状态文件中出现完整用户名
             masked_username = mask_username(result.get('username', 'unknown'))
-
-            detail_to_save = result.copy()
-            detail_to_save['username'] = masked_username
-            accounts_detail.append(detail_to_save)
 
             if result['success']:
                 success_count += 1
@@ -398,11 +346,6 @@ def main():
             fail_count += 1
             masked_username = mask_username(account_config.get('username', 'unknown'))
             log.error(f"❌ 账号 {i} ({masked_username}) 执行异常: {e}", exc_info=True)
-            accounts_detail.append({
-                'username': masked_username,
-                'success': False,
-                'message': f"执行异常: {str(e)}"
-            })
 
     # 总结
     log.info(f"\n{'='*60}")
@@ -411,10 +354,7 @@ def main():
     log.info(f"   - 失败: {fail_count} 个账号")
     log.info(f"{'='*60}")
 
-    # 保存状态
     all_success = (fail_count == 0 and success_count > 0)
-    summary_msg = f"成功{success_count}个，失败{fail_count}个"
-    save_today_status(all_success, summary_msg, accounts_detail)
 
     # 退出码
     sys.exit(0 if all_success else 1)

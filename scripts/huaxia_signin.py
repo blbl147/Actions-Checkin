@@ -30,7 +30,6 @@ class Config:
     # GitHub Actions 环境下关闭详细调试
     DEBUG = os.getenv('DEBUG', 'false').lower() == 'true'
     IS_GITHUB_ACTIONS = os.getenv('GITHUB_ACTIONS') == 'true'
-    STATUS_FILE = "status/status_huaxia.json"
 
 # ========== 创建会话 ==========
 def create_session():
@@ -47,7 +46,7 @@ def create_session():
 
     if Config.PROXY:
         session.proxies = {'http': Config.PROXY, 'https': Config.PROXY}
-        print(f"🌐 使用代理: {Config.PROXY}")
+        print("🌐 使用代理: 已配置")
 
     return session
 
@@ -79,6 +78,9 @@ def validate_config():
     # 脱敏显示用户名
     masked_username = Config.USERNAME[:3] + '***' + Config.USERNAME[-3:] if len(Config.USERNAME) > 6 else '***'
     print(f"📧 使用账号: {masked_username}")
+
+def mask_mapping_values(data: dict) -> dict:
+    return {key: "***" for key in data}
 
 def check_network():
     try:
@@ -161,8 +163,8 @@ def login() -> str:
         if Config.DEBUG and not Config.IS_GITHUB_ACTIONS:
             print(f"\n{'='*60}")
             print(f"📊 HTTP状态码: {response.status_code}")
-            print(f"📦 响应内容: {response.text[:300]}")
-            print(f"🍪 Cookies: {response.cookies.get_dict()}")
+            print(f"📦 响应长度: {len(response.text)}")
+            print(f"🍪 Cookies: {mask_mapping_values(response.cookies.get_dict())}")
             print(f"{'='*60}\n")
 
         try:
@@ -231,7 +233,7 @@ def sign_in(cookie: str):
         if Config.DEBUG and not Config.IS_GITHUB_ACTIONS:
             print(f"\n{'='*60}")
             print(f"📊 签到响应状态码: {response.status_code}")
-            print(f"📦 签到响应内容: {response.text[:300]}")
+            print(f"📦 签到响应长度: {len(response.text)}")
             print(f"{'='*60}\n")
 
         try:
@@ -283,8 +285,6 @@ def main():
         sys.exit(0)
     except Exception as e:
         notify('💥 脚本异常', f'{type(e).__name__}: {str(e)}')
-        import traceback
-        print(traceback.format_exc())
         sys.exit(1)
 
 if __name__ == '__main__':

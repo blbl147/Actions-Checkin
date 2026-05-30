@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 龙空论坛自动签到脚本 - GitHub Actions版本
-支持状态记录和重试机制
 """
 
 import requests
@@ -15,47 +14,6 @@ import urllib3
 # 禁用SSL警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# 状态文件路径
-STATUS_FILE = "status/status_lkong.json"
-
-def load_today_status():
-    """加载今日签到状态"""
-    if not os.path.exists(STATUS_FILE):
-        return False
-
-    try:
-        with open(STATUS_FILE, 'r', encoding='utf-8') as f:
-            data = f.read().strip()
-            if not data:
-                return False
-            status = json.loads(data)
-            # 检查是否是今天的记录
-            today = datetime.now().strftime('%Y-%m-%d')
-            if status.get('date') == today and status.get('success'):
-                print(f"✅ 今日({today})已成功签到，跳过本次运行")
-                return True
-    except Exception as e:
-        print(f"⚠️ 读取状态文件失败: {e}")
-
-    return False
-
-def save_today_status(success, message=""):
-    """保存今日签到状态"""
-    today = datetime.now().strftime('%Y-%m-%d')
-    status = {
-        'date': today,
-        'success': success,
-        'message': message,
-        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    }
-
-    try:
-        with open(STATUS_FILE, 'w', encoding='utf-8') as f:
-            f.write(json.dumps(status, ensure_ascii=False, indent=2))
-        print(f"💾 状态已保存: {status}")
-    except Exception as e:
-        print(f"⚠️ 保存状态失败: {e}")
-
 def lkong_punch():
     """龙空论坛签到主函数"""
 
@@ -66,7 +24,6 @@ def lkong_punch():
         error_msg = "❌ 错误: 未找到LKONG_COOKIE环境变量"
         print(error_msg)
         print("请在GitHub Secrets中设置LKONG_COOKIE")
-        save_today_status(False, error_msg)
         return False
 
     url = "https://api.lkong.com/api"
@@ -107,7 +64,7 @@ def lkong_punch():
     print(f"🚀 龙空论坛自动签到 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
     print(f"📡 目标地址: {url}")
-    print(f"📦 Cookie长度: {len(cookie)} 字符")
+    print("📦 Cookie: 已配置")
 
     try:
         response = requests.post(
@@ -142,66 +99,50 @@ def lkong_punch():
                         print(f"🏆 最高连签: {highest_day} 天")
                         print(f"📊 总签到数: {all_day} 天")
 
-                        save_today_status(True, success_msg)
                         return True
                     else:
                         # isPunch为false可能表示今天已经签到过了
                         msg = f"签到状态未知 (isPunch=false), 连签{punch_day}天"
                         print(f"⚠️ {msg}")
                         # 也记录为成功，因为可能已经签到过了
-                        save_today_status(True, msg)
                         return True
 
                 elif data.get("errors"):
                     # GraphQL错误
-                    error_msg = f"GraphQL错误: {data['errors']}"
+                    error_msg = f"GraphQL错误，数量: {len(data['errors'])}"
                     print(f"❌ {error_msg}")
-                    save_today_status(False, error_msg)
                     return False
                 else:
-                    error_msg = f"响应格式异常: {data}"
+                    error_msg = f"响应格式异常，字段: {list(data.keys())}"
                     print(f"❌ {error_msg}")
-                    save_today_status(False, error_msg)
                     return False
 
             except json.JSONDecodeError as e:
-                error_msg = f"JSON解析失败: {response.text[:200]}"
+                error_msg = f"JSON解析失败，响应长度: {len(response.text)}"
                 print(f"❌ {error_msg}")
-                save_today_status(False, error_msg)
                 return False
         else:
-            error_msg = f"HTTP {response.status_code}: {response.text[:200]}"
+            error_msg = f"HTTP {response.status_code}，响应长度: {len(response.text)}"
             print(f"❌ {error_msg}")
-            save_today_status(False, error_msg)
             return False
 
     except requests.exceptions.Timeout:
         error_msg = "请求超时"
         print(f"❌ {error_msg}")
-        save_today_status(False, error_msg)
         return False
 
     except requests.exceptions.ConnectionError as e:
         error_msg = f"网络连接失败: {str(e)[:100]}"
         print(f"❌ {error_msg}")
-        save_today_status(False, error_msg)
         return False
 
     except Exception as e:
         error_msg = f"未知错误: {type(e).__name__} - {str(e)[:100]}"
         print(f"❌ {error_msg}")
-        import traceback
-        traceback.print_exc()
-        save_today_status(False, error_msg)
         return False
 
 def main():
     """主函数"""
-    # 检查今日是否已成功签到
-    if load_today_status():
-        print("✅ 今日已完成签到，无需重复运行")
-        sys.exit(0)  # 退出码0表示成功
-
     # 执行签到
     success = lkong_punch()
 

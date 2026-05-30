@@ -1,0 +1,76 @@
+name: 📚 尚香书苑自动签到
+
+on:
+  schedule:
+    - cron: '15 19 * * *'  # 北京时间 03:15 (UTC 19:15)
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: '手动触发原因'
+        required: false
+        default: '测试运行'
+
+permissions:
+  contents: write
+
+jobs:
+  checkin:
+    name: 尚香书苑签到
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: 🐍 设置Python环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 🔎 安装OCR系统依赖
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr
+
+      - name: 📦 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: ⏰ 显示运行时间
+        run: |
+          echo "UTC时间: $(date -u '+%Y-%m-%d %H:%M:%S')"
+          echo "北京时间: $(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')"
+
+      - name: 🚀 执行签到任务
+        id: checkin
+        continue-on-error: true
+        env:
+          SXSY_COOKIE: ${{ secrets.SXSY_COOKIE }}
+          SXSY_ACCOUNTS: ${{ secrets.SXSY_ACCOUNTS }}
+          USER_AGENT: ${{ secrets.USER_AGENT }}
+          TZ: Asia/Shanghai
+        run: python scripts/sxsy_checkin.py
+
+      - name: 💾 提交状态文件
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add status/sxsy_domain.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update sxsy checkin status"
+            git push
+          else
+            echo "状态文件无变化，跳过提交"
+          fi
+
+      - name: ✅ 检查签到结果
+        if: steps.checkin.outcome == 'failure'
+        run: exit 1
