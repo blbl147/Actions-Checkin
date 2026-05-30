@@ -33,13 +33,8 @@ except ImportError:
     OCR_AVAILABLE = False
     log_msg = "⚠️ OCR库未安装，将跳过图片识别功能"
 
-# 尝试导入 curl_cffi（可选）：模拟真实浏览器 TLS/HTTP2 指纹，绕过 Cloudflare 指纹质询
-try:
-    from curl_cffi import requests as cffi_requests
-    CURL_CFFI_AVAILABLE = True
-except ImportError:
-    cffi_requests = None
-    CURL_CFFI_AVAILABLE = False
+# 注：曾用 curl_cffi 模拟 Chrome 指纹试图绕过 Cloudflare，但实测站点是按机房 IP 信誉弹 JS 质询，
+# 换指纹无效（详见 README），故移除。
 
 # 禁用SSL警告和XML解析警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -61,7 +56,7 @@ log = logging.getLogger(__name__)
 
 # ==================== 配置常量 ====================
 RELEASE_PAGE_URL = "https://sxsy.org/"  # 发布页地址
-DEFAULT_DOMAIN = "sxsy19.com"  # 默认域名
+DEFAULT_DOMAIN = "sxsy13.com"  # 默认域名
 DOMAIN_CACHE_FILE = STATUS_DIR / "sxsy_domain.json"  # 域名缓存文件
 
 # ==================== 域名管理 ====================
@@ -448,22 +443,19 @@ class SXSYCheckin:
         self.math_verify = ""
         self.domain_changed = False
 
-        # 创建session：优先用 curl_cffi 模拟 Chrome 指纹，绕过 Cloudflare 指纹质询
-        if CURL_CFFI_AVAILABLE:
-            self.session = cffi_requests.Session(impersonate="chrome")
-            log.info("🛡️ 已启用 curl_cffi（模拟 Chrome 指纹）")
-        else:
-            self.session = requests.session()
-            self.session.verify = False
-            retry_strategy = Retry(
-                total=3,
-                backoff_factor=1,
-                status_forcelist=[429, 500, 502, 503, 504]
-            )
-            adapter = HTTPAdapter(max_retries=retry_strategy)
-            self.session.mount("https://", adapter)
-            self.session.mount("http://", adapter)
-            log.info("ℹ️ curl_cffi 未安装，使用标准 requests")
+        # 创建session并配置
+        self.session = requests.session()
+        self.session.verify = False
+
+        # 配置重试策略
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504]
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("https://", adapter)
+        self.session.mount("http://", adapter)
 
         # 设置Cookie
         if self.cookie:
@@ -515,18 +507,6 @@ class SXSYCheckin:
                 verify=False,
                 allow_redirects=True
             )
-
-            # ===== 临时诊断（定位反爬类型后可删除）=====
-            if response.status_code >= 400:
-                hdr = response.headers
-                log.warning(
-                    "🔬 诊断 status=%s server=%s cf-ray=%s via=%s len=%s ctype=%s"
-                    % (response.status_code, hdr.get('Server', ''), hdr.get('cf-ray', ''),
-                       hdr.get('Via', ''), len(response.text), hdr.get('Content-Type', ''))
-                )
-                log.warning("🔬 诊断 body[:200]=%r" % response.text[:200])
-            # ===========================================
-
             response.raise_for_status()
 
             # 检查是否已签到

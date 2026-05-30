@@ -1,14 +1,14 @@
 name: 📚 尚香书苑自动签到
 
+# 注意：尚香书苑站点在 Cloudflare 后面，会对 GitHub 托管 runner 的机房 IP 弹 JS 质询（Just a moment...），
+# 托管环境无法稳定签到，故仅保留手动触发。请在本机/自托管 runner（受信任 IP）上运行。
 on:
-  schedule:
-    - cron: '15 19 * * *'  # 北京时间 03:15 (UTC 19:15)
   workflow_dispatch:
     inputs:
       reason:
         description: '手动触发原因'
         required: false
-        default: '测试运行'
+        default: '手动运行'
 
 permissions:
   contents: write

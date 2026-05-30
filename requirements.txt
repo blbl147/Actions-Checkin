@@ -6,5 +6,8 @@ urllib3>=2.2.0
 beautifulsoup4>=4.12.0
 lxml>=4.9.0
 pillow>=10.0.0
-# 尚香书苑专用 - 绕过 Cloudflare TLS 指纹质询
-curl_cffi>=0.7.0
+pytesseract>=0.3.10
+
+# 尚香书苑曾试用 curl_cffi 绕过 Cloudflare 指纹质询，但实测站点按机房 IP 信誉弹 JS 质询、
+# 换指纹无效（详见 README），故停用。
+# curl_cffi>=0.7.0
