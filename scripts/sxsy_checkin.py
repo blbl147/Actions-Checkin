@@ -504,6 +504,18 @@ class SXSYCheckin:
                 verify=False,
                 allow_redirects=True
             )
+
+            # ===== 临时诊断（定位反爬类型后可删除）=====
+            if response.status_code >= 400:
+                hdr = response.headers
+                log.warning(
+                    "🔬 诊断 status=%s server=%s cf-ray=%s via=%s len=%s ctype=%s"
+                    % (response.status_code, hdr.get('Server', ''), hdr.get('cf-ray', ''),
+                       hdr.get('Via', ''), len(response.text), hdr.get('Content-Type', ''))
+                )
+                log.warning("🔬 诊断 body[:200]=%r" % response.text[:200])
+            # ===========================================
+
             response.raise_for_status()
 
             # 检查是否已签到
