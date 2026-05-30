@@ -61,7 +61,7 @@ log = logging.getLogger(__name__)
 
 # ==================== 配置常量 ====================
 RELEASE_PAGE_URL = "https://sxsy.org/"  # 发布页地址
-DEFAULT_DOMAIN = "sxsy19.com"  # 默认域名
+DEFAULT_DOMAIN = "sxsy13.com"  # 默认域名
 DOMAIN_CACHE_FILE = STATUS_DIR / "sxsy_domain.json"  # 域名缓存文件
 
 # ==================== 域名管理 ====================
