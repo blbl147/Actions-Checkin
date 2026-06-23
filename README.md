@@ -1,83 +1,67 @@
 # ✨ Actions-Checkin
 
-<div align="center">
-
 [![GitHub Actions](https://img.shields.io/badge/GitHub-Actions-2088FF?style=flat-square&logo=github-actions&logoColor=white)](https://github.com/features/actions)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](https://chatgpt.com/c/LICENSE)
 
-**自动签到**
+自动化签到合集，基于 GitHub Actions 定时执行。
 
-支持平台：花夏数娱 | 龙空论坛 | 星城小程序 | 看雪论坛(GitHub中会被检测，失效了) | 雨晨iOS资源 | 尚香书苑
-
-</div>
-
----
+------
 
 ## 🎯 支持平台
 
-| 平台 | 状态 | 认证方式 | 执行时间 |
-|------|------|----------|---------|
-| 🌸 花夏数娱 | ✅ | 账号密码 | 每天 03:00 |
-| 🐉 龙空论坛 | ✅ | Cookie | 每天 04:00 |
-| 🏙️ 星城小程序 | ✅ | Token + AppID | 每天 01:10 |
-| ❄️ 看雪论坛 | ❌ | Cookie | 每天 02:00 |
-| 🌧️ 雨晨iOS | ✅ | 账号密码 | 每天 03:00 |
-| 📚 尚香书苑 | ⚠️ | Cookie | 仅手动/本地 |
+| 平台          | 状态                       | 认证方式      |
+| ------------- | -------------------------- | ------------- |
+| 星城小程序    | ✅ 正常                     | Token + AppID |
+| 雨晨 iOS 资源 | ✅ 正常                     | 账号密码      |
+| 禁漫天堂      | ✅ 正常                     | 账号密码      |
+| 龙空论坛      | ✅ 正常                     | Cookie        |
+| 花夏数娱      | ⚠️ 网站关闭，无法签到       | 账号密码      |
+| 尚香书苑      | ❌ GitHub Actions IP 被拦截 | Cookie        |
+| 看雪论坛      | ❌ GitHub Actions IP 被拦截 | Cookie        |
 
----
+------
 
 ## 🚀 快速开始
 
 ### 1. Fork 本仓库
 
-点击右上角 **Fork** 按钮
+点击页面右上角的 **Fork**，将仓库复制到自己的 GitHub 账户。
 
-### 2. 配置 Secrets
+### 2. 配置 GitHub Secrets
 
-#### 🌸 花夏数娱
+进入 Fork 后的仓库：
 
-| Secret名称 | 说明 | 示例 |
-|-----------|------|------|
-| `HXSY_USERNAME` | 登录账号 | `user@example.com` |
-| `HXSY_PASSWORD` | 登录密码 | `your_password` |
+`Settings` → `Secrets and variables` → `Actions` → `New repository secret`
 
-#### 🐉 龙空论坛
+按需添加下方平台对应的 Secret。
 
-| Secret名称 | 说明 | 获取方法 |
-|-----------|------|---------|
-| `LKONG_COOKIE` | 网站Cookie | F12 → Network → Cookie字段 |
+> 注意：Secret 名称必须完全一致，内容中不要包含多余空格或换行。
 
+------
 
-#### 🏙️ 星城小程序
+## 🔐 Secret 配置说明
 
-| Secret名称 | 说明 | 获取方法 |
-|-----------|------|---------|
-| `CHECKIN_TOKEN` | 认证Token | 抓包获取 |
-| `APP_ID` | 小程序AppID | 抓包获取 |
+### 星城小程序
 
+| Secret 名称     | 说明           | 示例       |
+| --------------- | -------------- | ---------- |
+| `CHECKIN_TOKEN` | 登录认证 Token | `抓包获取` |
+| `APP_ID`        | 小程序 AppID   | `抓包获取` |
 
-#### ❄️ 看雪论坛
+### 雨晨 iOS 资源
 
-| Secret名称 | 说明 | 获取方法 |
-|-----------|------|---------|
-| `KANXUE_COOKIE` | 网站Cookie | 抓签到user-signin.htm或者signin |
+#### 单账号配置
 
-
-
-#### 🌧️ 雨晨iOS资源
-
-**方式1：单账号**
-
-| Secret名称 | 说明 | 示例 |
-|-----------|------|------|
+| Secret 名称       | 说明     | 示例               |
+| ----------------- | -------- | ------------------ |
 | `YUCHEN_USERNAME` | 登录账号 | `user@example.com` |
-| `YUCHEN_PASSWORD` | 登录密码 | `your_password` |
+| `YUCHEN_PASSWORD` | 登录密码 | `your_password`    |
 
-**方式2：多账号**
+#### 多账号配置
 
-| Secret名称 | 说明 | 格式 |
-|-----------|------|------|
-| `YUCHEN_ACCOUNTS` | 多账号JSON | 见下方示例 |
+| Secret 名称       | 说明             | 格式       |
+| ----------------- | ---------------- | ---------- |
+| `YUCHEN_ACCOUNTS` | 多账号 JSON 配置 | 见下方示例 |
 
 ```json
 [
@@ -92,45 +76,85 @@
 ]
 ```
 
-#### 📚 尚香书苑
+### 禁漫天堂
 
-**方式1：单账号**
+| Secret 名称   | 说明     | 示例            |
+| ------------- | -------- | --------------- |
+| `JM_ACCOUNT`  | 登录账号 | `username`      |
+| `JM_PASSWORD` | 登录密码 | `your_password` |
 
-| Secret名称 | 说明 | 获取方法 |
-|-----------|------|---------|
-| `SXSY_COOKIE` | 网站Cookie | F12 → Network → Cookie字段 |
+### 龙空论坛
 
-**方式2：多账号**
+| Secret 名称    | 说明        | 获取方式                                               |
+| -------------- | ----------- | ------------------------------------------------------ |
+| `LKONG_COOKIE` | 网站 Cookie | 浏览器按 `F12` → `Network`，从请求头中获取 Cookie 字段 |
 
-| Secret名称 | 说明 | 格式 |
-|-----------|------|------|
-| `SXSY_ACCOUNTS` | 多账号JSON | 见下方示例 |
+### 花夏数娱
+
+| Secret 名称     | 说明     | 示例               |
+| --------------- | -------- | ------------------ |
+| `HXSY_USERNAME` | 登录账号 | `user@example.com` |
+| `HXSY_PASSWORD` | 登录密码 | `your_password`    |
+
+### 尚香书苑
+
+#### 单账号配置
+
+| Secret 名称   | 说明        | 获取方式                                               |
+| ------------- | ----------- | ------------------------------------------------------ |
+| `SXSY_COOKIE` | 网站 Cookie | 浏览器按 `F12` → `Network`，从请求头中获取 Cookie 字段 |
+
+#### 多账号配置
+
+| Secret 名称     | 说明             | 格式       |
+| --------------- | ---------------- | ---------- |
+| `SXSY_ACCOUNTS` | 多账号 JSON 配置 | 见下方示例 |
 
 ```json
 [
   {
-    "cookie": "账号1的完整Cookie",
+    "cookie": "账号1的完整 Cookie",
     "user_agent": "Mozilla/5.0 ..."
   },
   {
-    "cookie": "账号2的完整Cookie",
+    "cookie": "账号2的完整 Cookie",
     "user_agent": "Mozilla/5.0 ..."
   }
 ]
 ```
 
-> 📌 尚香书苑支持自动域名更新：默认使用上次成功的域名（持久化在 `status/sxsy_domain.json`），
-> 域名失效时会自动从发布页或本地 `gt/` 备份页（含 OCR 识别）获取最新域名并重试，成功后更新默认域名。
->
-> ⚠️ **尚香书苑站点在 Cloudflare 后面，会对 GitHub 托管 runner 的机房 IP 弹 JS 质询（Just a moment...），
-> 托管环境无法稳定签到**（与看雪同类问题）。因此该工作流已改为**仅手动触发**，请在本机或自托管 runner
-> （Cloudflare 信任的 IP）上运行。
+### 看雪论坛
 
----
+| Secret 名称     | 说明        | 获取方式                                           |
+| --------------- | ----------- | -------------------------------------------------- |
+| `KANXUE_COOKIE` | 网站 Cookie | 抓取 `user-signin.htm` 或 `signin` 请求中的 Cookie |
+
+------
+
+## 📅 执行时间
+
+工作流默认按照仓库内配置的 `cron` 表达式自动运行。
+
+需要调整签到时间时，修改对应 GitHub Actions 工作流文件中的：
+
+```yaml
+schedule:
+  - cron: "0 0 * * *"
+```
+
+------
+
 ## ⚠️ 免责声明
 
-本项目仅供学习交流使用，请勿用于商业用途
-使用本项目所产生的一切后果由使用者自行承担
-请遵守相关网站的服务条款和使用规则
-频繁请求可能导致账号被封禁，请合理设置签到频率
-开发者不对账号安全负责，请妥善保管账号信息
+- 本项目仅供学习与交流使用，不得用于商业用途。
+- 使用本项目产生的一切后果由使用者自行承担。
+- 请遵守相关网站的服务条款、使用规则及当地法律法规。
+- 高频请求可能导致账号异常或封禁，请合理设置执行频率。
+- 请妥善保管账号、密码、Cookie 与 Token 等敏感信息。
+- 开发者不对使用过程中产生的账号安全问题承担责任。
+
+------
+
+## 📄 License
+
+本项目基于 [MIT License](https://chatgpt.com/c/LICENSE) 开源。
